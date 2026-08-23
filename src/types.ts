@@ -60,7 +60,7 @@ export interface Hotel {
   totalPrice: number
   neighborhood: string
   amenities: string[]
-  imageQuery: string
+  image: string
   description: string
 }
 
@@ -72,6 +72,7 @@ export interface Restaurant {
   neighborhood: string
   mealType: string
   description: string
+  image: string
 }
 
 export interface Attraction {
@@ -81,7 +82,7 @@ export interface Attraction {
   price: number
   duration: string
   description: string
-  imageQuery: string
+  image: string
 }
 
 export interface DayPlan {
@@ -92,6 +93,7 @@ export interface DayPlan {
   afternoon: string
   evening: string
   estimatedCost: number
+  image: string
 }
 
 export interface BudgetBreakdown {
@@ -126,7 +128,7 @@ export interface Itinerary {
   hotels: Hotel[]
   restaurants: Restaurant[]
   attractions: Attraction[]
-  events: { name: string; type: string; date: string; description: string }[]
+  events: { name: string; type: string; date: string; description: string; image: string }[]
   transport: { type: string; description: string; price: number }[]
   dayPlans: DayPlan[]
   budget: BudgetBreakdown

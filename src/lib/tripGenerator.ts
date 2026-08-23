@@ -10,6 +10,7 @@ import type {
   BudgetBreakdown,
   TripScore,
 } from '../types'
+import { getHotelImage, getRestaurantImage, getAttractionImage, getEventImage, getCityImage } from './imageData'
 
 const AIRPORTS: Record<string, { name: string; code: string; terminals: { name: string; gates: number; restaurants: number; shops: number }[]; lounges: { name: string; location: string; access: string; rating: number }[]; services: string[] }> = {
   'New York': {
@@ -142,12 +143,12 @@ const AIRLINES = [
   { name: 'Vanguard Airlines', code: 'VG', aircraft: 'Airbus A330-300' },
 ]
 
-const HOTEL_TEMPLATES: Record<string, { name: string; neighborhood: string; amenities: string[]; description: string; imageQuery: string }[]> = {
+const HOTEL_TEMPLATES: Record<string, { name: string; neighborhood: string; amenities: string[]; description: string }[]> = {
   default: [
-    { name: 'The Grand Horizon Hotel', neighborhood: 'City Center', amenities: ['Free WiFi', 'Pool', 'Fitness Center', 'Restaurant', 'Bar', 'Spa'], description: 'A modern luxury hotel in the heart of the city with panoramic views and premium amenities.', imageQuery: 'luxury hotel lobby' },
-    { name: 'Boutique Skyline Suites', neighborhood: 'Arts District', amenities: ['Free WiFi', 'Rooftop Bar', 'Restaurant', 'Bike Rental'], description: 'A stylish boutique hotel blending local culture with contemporary design.', imageQuery: 'boutique hotel room modern' },
-    { name: 'Riverside Inn & Spa', neighborhood: 'Riverside', amenities: ['Free WiFi', 'Spa', 'Pool', 'Restaurant', 'Garden'], description: 'A serene retreat along the river with full-service spa and farm-to-table dining.', imageQuery: 'riverside hotel spa resort' },
-    { name: 'Metro Express Hotel', neighborhood: 'Business District', amenities: ['Free WiFi', 'Fitness Center', 'Business Center', '24h Check-in'], description: 'A smart, efficient hotel designed for modern travelers who value convenience.', imageQuery: 'modern business hotel room' },
+    { name: 'The Grand Horizon Hotel', neighborhood: 'City Center', amenities: ['Free WiFi', 'Pool', 'Fitness Center', 'Restaurant', 'Bar', 'Spa'], description: 'A modern luxury hotel in the heart of the city with panoramic views and premium amenities.' },
+    { name: 'Boutique Skyline Suites', neighborhood: 'Arts District', amenities: ['Free WiFi', 'Rooftop Bar', 'Restaurant', 'Bike Rental'], description: 'A stylish boutique hotel blending local culture with contemporary design.' },
+    { name: 'Riverside Inn & Spa', neighborhood: 'Riverside', amenities: ['Free WiFi', 'Spa', 'Pool', 'Restaurant', 'Garden'], description: 'A serene retreat along the river with full-service spa and farm-to-table dining.' },
+    { name: 'Metro Express Hotel', neighborhood: 'Business District', amenities: ['Free WiFi', 'Fitness Center', 'Business Center', '24h Check-in'], description: 'A smart, efficient hotel designed for modern travelers who value convenience.' },
   ],
 }
 
@@ -164,16 +165,16 @@ const RESTAURANT_TEMPLATES: Record<string, { name: string; cuisine: string; pric
   ],
 }
 
-const ATTRACTION_TEMPLATES: Record<string, { name: string; category: string; duration: string; description: string; imageQuery: string }[]> = {
+const ATTRACTION_TEMPLATES: Record<string, { name: string; category: string; duration: string; description: string }[]> = {
   default: [
-    { name: 'Historic Old Town Walking Tour', category: 'Culture', duration: '3 hours', description: 'Guided walk through cobblestone streets, historic landmarks, and hidden courtyards.', imageQuery: 'historic old town cobblestone street' },
-    { name: 'Skyline Observation Deck', category: 'Landmark', duration: '1-2 hours', description: 'Panoramic city views from the tallest tower with interactive exhibits.', imageQuery: 'city skyline observation deck view' },
-    { name: 'Central Park Gardens', category: 'Nature', duration: '2 hours', description: 'Stroll through beautifully landscaped gardens with seasonal blooms and sculptures.', imageQuery: 'botanical garden park flowers' },
-    { name: 'Modern Art Museum', category: 'Culture', duration: '2-3 hours', description: 'World-class contemporary art collection with rotating exhibitions.', imageQuery: 'modern art museum gallery interior' },
-    { name: 'Sunset Harbor Cruise', category: 'Adventure', duration: '2 hours', description: 'Scenic boat tour with sunset views, dolphin watching, and refreshments.', imageQuery: 'harbor cruise boat sunset' },
-    { name: 'Food Market Adventure', category: 'Food', duration: '2 hours', description: 'Explore the city\'s best food market with tastings from local vendors.', imageQuery: 'food market street food vendors' },
-    { name: 'Mountain Hiking Trail', category: 'Adventure', duration: '4-5 hours', description: 'Guided hike with breathtaking summit views and diverse wildlife.', imageQuery: 'mountain hiking trail scenic view' },
-    { name: 'Rooftop Cinema Experience', category: 'Entertainment', duration: '3 hours', description: 'Open-air movie screening under the stars with gourmet snacks.', imageQuery: 'rooftop cinema outdoor movie night' },
+    { name: 'Historic Old Town Walking Tour', category: 'Culture', duration: '3 hours', description: 'Guided walk through cobblestone streets, historic landmarks, and hidden courtyards.' },
+    { name: 'Skyline Observation Deck', category: 'Landmark', duration: '1-2 hours', description: 'Panoramic city views from the tallest tower with interactive exhibits.' },
+    { name: 'Central Park Gardens', category: 'Nature', duration: '2 hours', description: 'Stroll through beautifully landscaped gardens with seasonal blooms and sculptures.' },
+    { name: 'Modern Art Museum', category: 'Culture', duration: '2-3 hours', description: 'World-class contemporary art collection with rotating exhibitions.' },
+    { name: 'Sunset Harbor Cruise', category: 'Adventure', duration: '2 hours', description: 'Scenic boat tour with sunset views, dolphin watching, and refreshments.' },
+    { name: 'Food Market Adventure', category: 'Food', duration: '2 hours', description: 'Explore the city\'s best food market with tastings from local vendors.' },
+    { name: 'Mountain Hiking Trail', category: 'Adventure', duration: '4-5 hours', description: 'Guided hike with breathtaking summit views and diverse wildlife.' },
+    { name: 'Rooftop Cinema Experience', category: 'Entertainment', duration: '3 hours', description: 'Open-air movie screening under the stars with gourmet snacks.' },
   ],
 }
 
@@ -262,14 +263,14 @@ function generateHotels(input: TripInput): Hotel[] {
       totalPrice: pricePerNight * nights,
       neighborhood: t.neighborhood,
       amenities: t.amenities,
-      imageQuery: t.imageQuery,
+      image: getHotelImage(i),
       description: t.description,
     }
   })
 }
 
 function generateRestaurants(): Restaurant[] {
-  return RESTAURANT_TEMPLATES.default.map((r) => ({
+  return RESTAURANT_TEMPLATES.default.map((r, i) => ({
     name: r.name,
     cuisine: r.cuisine,
     priceRange: r.priceRange,
@@ -277,18 +278,19 @@ function generateRestaurants(): Restaurant[] {
     neighborhood: ['City Center', 'Arts District', 'Riverside', 'Old Town'][Math.floor(Math.random() * 4)],
     mealType: r.mealType,
     description: r.description,
+    image: getRestaurantImage(i),
   }))
 }
 
 function generateAttractions(input: TripInput): Attraction[] {
-  return ATTRACTION_TEMPLATES.default.map((a) => ({
+  return ATTRACTION_TEMPLATES.default.map((a, i) => ({
     name: a.name,
     category: a.category,
     rating: Number((Math.random() * 0.8 + 4.1).toFixed(1)),
     price: Math.floor(Math.random() * 40 + 10) * input.travelers,
     duration: a.duration,
     description: a.description,
-    imageQuery: a.imageQuery,
+    image: getAttractionImage(i),
   }))
 }
 
@@ -311,6 +313,7 @@ function generateDayPlans(input: TripInput): DayPlan[] {
       afternoon: afternoonActs[i % afternoonActs.length],
       evening: eveningActs[i % eveningActs.length],
       estimatedCost: Math.floor(Math.random() * 80 + 60) * input.travelers,
+      image: getCityImage(input.destinationCity),
     })
   }
   return plans
@@ -389,9 +392,9 @@ export function generateItinerary(input: TripInput): Itinerary {
     restaurants,
     attractions,
     events: [
-      { name: 'Summer Music Festival', type: 'Music', date: input.departureDate, description: 'Three-day outdoor music festival featuring international and local artists.' },
-      { name: 'Food & Wine Expo', type: 'Food', date: input.departureDate, description: 'Annual culinary showcase with tastings, cooking demos, and wine pairings.' },
-      { name: 'Night Light Parade', type: 'Culture', date: input.returnDate, description: 'Spectacular illuminated parade through the city center with performances.' },
+      { name: 'Summer Music Festival', type: 'Music', date: input.departureDate, description: 'Three-day outdoor music festival featuring international and local artists.', image: getEventImage(0) },
+      { name: 'Food & Wine Expo', type: 'Food', date: input.departureDate, description: 'Annual culinary showcase with tastings, cooking demos, and wine pairings.', image: getEventImage(1) },
+      { name: 'Night Light Parade', type: 'Culture', date: input.returnDate, description: 'Spectacular illuminated parade through the city center with performances.', image: getEventImage(2) },
     ],
     transport: [
       { type: 'Airport Transfer', description: 'Private car service from airport to hotel', price: 45 * input.travelers },

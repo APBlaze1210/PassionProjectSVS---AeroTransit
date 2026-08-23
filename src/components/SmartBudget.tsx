@@ -7,8 +7,8 @@ interface SmartBudgetProps {
 
 export default function SmartBudget({ budget }: SmartBudgetProps) {
   const categories = [
-    { label: 'Flights', value: budget.flights, icon: Plane, color: 'aero' },
-    { label: 'Hotels', value: budget.hotels, icon: Hotel, color: 'accent' },
+    { label: 'Flights', value: budget.flights, icon: Plane, color: 'red' },
+    { label: 'Hotels', value: budget.hotels, icon: Hotel, color: 'navy' },
     { label: 'Food', value: budget.food, icon: Utensils, color: 'rose' },
     { label: 'Attractions', value: budget.attractions, icon: Camera, color: 'violet' },
     { label: 'Transport', value: budget.transport, icon: Bus, color: 'emerald' },
@@ -19,8 +19,8 @@ export default function SmartBudget({ budget }: SmartBudgetProps) {
   const overBudget = budget.remaining < 0
 
   const colorMap: Record<string, string> = {
-    aero: 'bg-aero-400',
-    accent: 'bg-accent-400',
+    red: 'bg-red-500',
+    navy: 'bg-cream-300',
     rose: 'bg-rose-400',
     violet: 'bg-violet-400',
     emerald: 'bg-emerald-400',
@@ -28,8 +28,8 @@ export default function SmartBudget({ budget }: SmartBudgetProps) {
   }
 
   const textMap: Record<string, string> = {
-    aero: 'text-aero-400',
-    accent: 'text-accent-400',
+    red: 'text-red-400',
+    navy: 'text-cream-300',
     rose: 'text-rose-400',
     violet: 'text-violet-400',
     emerald: 'text-emerald-400',
@@ -41,22 +41,22 @@ export default function SmartBudget({ budget }: SmartBudgetProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-1">
-            <DollarSign className="w-4 h-4 text-slate-400" />
-            <span className="text-xs text-slate-500">Your Budget</span>
+            <DollarSign className="w-4 h-4 text-cream-400" />
+            <span className="text-xs text-cream-400">Your Budget</span>
           </div>
-          <p className="text-2xl font-display font-bold text-white">${budget.budget.toLocaleString()}</p>
+          <p className="text-2xl font-display font-bold text-cream-100">${budget.budget.toLocaleString()}</p>
         </div>
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-4 h-4 text-rose-400" />
-            <span className="text-xs text-slate-500">Trip Total</span>
+            <span className="text-xs text-cream-400">Trip Total</span>
           </div>
-          <p className="text-2xl font-display font-bold text-white">${budget.total.toLocaleString()}</p>
+          <p className="text-2xl font-display font-bold text-cream-100">${budget.total.toLocaleString()}</p>
         </div>
         <div className={`glass-card p-4 ${overBudget ? 'border-rose-400/30' : 'border-emerald-400/30'}`}>
           <div className="flex items-center gap-2 mb-1">
             {overBudget ? <TrendingDown className="w-4 h-4 text-rose-400" /> : <TrendingUp className="w-4 h-4 text-emerald-400" />}
-            <span className="text-xs text-slate-500">{overBudget ? 'Over Budget' : 'Remaining'}</span>
+            <span className="text-xs text-cream-400">{overBudget ? 'Over Budget' : 'Remaining'}</span>
           </div>
           <p className={`text-2xl font-display font-bold ${overBudget ? 'text-rose-400' : 'text-emerald-400'}`}>
             ${Math.abs(budget.remaining).toLocaleString()}
@@ -65,19 +65,19 @@ export default function SmartBudget({ budget }: SmartBudgetProps) {
       </div>
 
       <div className="glass-card p-5">
-        <h3 className="font-display font-semibold text-white mb-4">Spending Breakdown</h3>
+        <h3 className="font-display font-semibold text-cream-100 mb-4">Spending Breakdown</h3>
         <div className="space-y-3">
           {categories.map((c) => {
             const pct = maxVal > 0 ? (c.value / maxVal) * 100 : 0
             return (
               <div key={c.label}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="flex items-center gap-2 text-sm text-slate-300">
+                  <span className="flex items-center gap-2 text-sm text-cream-200">
                     <c.icon className={`w-4 h-4 ${textMap[c.color]}`} /> {c.label}
                   </span>
-                  <span className="text-sm font-semibold text-white">${c.value.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-cream-100">${c.value.toLocaleString()}</span>
                 </div>
-                <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-2 rounded-full bg-cream-100/5 overflow-hidden">
                   <div className={`h-full rounded-full ${colorMap[c.color]} transition-all duration-700`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -91,12 +91,12 @@ export default function SmartBudget({ budget }: SmartBudgetProps) {
           <div className="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
             <Lightbulb className="w-4 h-4 text-emerald-400" />
           </div>
-          <h3 className="font-display font-semibold text-white">Smart Savings</h3>
+          <h3 className="font-display font-semibold text-cream-100">Smart Savings</h3>
           <span className="ml-auto text-sm font-semibold text-emerald-400">Save ${budget.savings}</span>
         </div>
         <div className="space-y-2">
           {budget.savingsTips.map((tip, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm text-slate-400">
+            <div key={i} className="flex items-start gap-2 text-sm text-cream-400">
               <span className="text-emerald-400 mt-0.5">→</span>
               <span className="leading-relaxed">{tip}</span>
             </div>
