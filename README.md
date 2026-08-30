@@ -26,3 +26,9 @@ A modern, futuristic AI-powered travel companion that plans your entire trip. En
 npm install
 npm run dev
 ```
+
+Vite will print the local preview address (normally `http://localhost:5173`).
+Your edits to files in `src/` are picked up automatically by the development
+server. Generated trips are also kept in the browser's local storage, so the
+current trip remains available after a refresh even when Supabase environment
+variables have not been configured.

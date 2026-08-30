@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import TripPlannerForm from './components/TripPlannerForm'
@@ -10,12 +10,42 @@ import type { Itinerary, TripInput } from './types'
 
 type View = 'landing' | 'planner' | 'dashboard'
 
+const LOCAL_TRIP_KEY = 'aero-transit:current-trip'
+
+type LocalTrip = {
+  itinerary: Itinerary
+  tripInput: TripInput
+}
+
+function getSavedTrip(): LocalTrip | null {
+  try {
+    const savedTrip = localStorage.getItem(LOCAL_TRIP_KEY)
+    if (!savedTrip) return null
+
+    const parsedTrip = JSON.parse(savedTrip) as LocalTrip
+    return parsedTrip.itinerary && parsedTrip.tripInput ? parsedTrip : null
+  } catch {
+    return null
+  }
+}
+
 export default function App() {
-  const [view, setView] = useState<View>('landing')
+  const [savedTrip] = useState(getSavedTrip)
+  const [view, setView] = useState<View>(savedTrip ? 'dashboard' : 'landing')
   const [loading, setLoading] = useState(false)
-  const [itinerary, setItinerary] = useState<Itinerary | null>(null)
-  const [tripInput, setTripInput] = useState<TripInput | null>(null)
+  const [itinerary, setItinerary] = useState<Itinerary | null>(savedTrip?.itinerary ?? null)
+  const [tripInput, setTripInput] = useState<TripInput | null>(savedTrip?.tripInput ?? null)
   const [aiOpen, setAiOpen] = useState(false)
+
+  useEffect(() => {
+    if (!itinerary || !tripInput) return
+
+    try {
+      localStorage.setItem(LOCAL_TRIP_KEY, JSON.stringify({ itinerary, tripInput }))
+    } catch {
+      // The trip remains usable if browser storage is unavailable.
+    }
+  }, [itinerary, tripInput])
 
   const handleGenerate = useCallback(async (input: TripInput) => {
     setLoading(true)
@@ -24,7 +54,7 @@ export default function App() {
     setTripInput(input)
 
     try {
-      await supabase.from('trips').insert({
+      await supabase?.from('trips').insert({
         departure_city: input.departureCity,
         destination_city: input.destinationCity,
         departure_date: input.departureDate,
