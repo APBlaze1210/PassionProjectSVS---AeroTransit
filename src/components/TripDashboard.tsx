@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Plane, Hotel, Utensils, Camera, CalendarDays, DollarSign, Gauge, MapPin, Users, Calendar, Sparkles, ArrowLeft, Bus, Star } from 'lucide-react'
-import type { Itinerary, TripInput } from '../types'
+import { Plane, Hotel, Utensils, Camera, CalendarDays, DollarSign, Gauge, MapPin, Users, Calendar, Sparkles, ArrowLeft, Bus, Star, AlertCircle } from 'lucide-react'
+import type { Itinerary, TripInput, DataSource } from '../types'
 import FlightsSection from './FlightsSection'
 import HotelsSection from './HotelsSection'
 import RestaurantsSection from './RestaurantsSection'
@@ -29,11 +29,28 @@ const TABS: { id: TabId; label: string; icon: typeof Plane }[] = [
   { id: 'budget', label: 'Smart Budget', icon: DollarSign },
 ]
 
+function DataSourceBadge({ source, label }: { source?: DataSource; label: string }) {
+  if (!source) return null
+  const styles: Record<string, string> = {
+    real: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
+    estimated: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    unavailable: 'bg-rose-500/10 border-rose-500/20 text-rose-400',
+  }
+  const labels: Record<string, string> = { real: 'Real-time data', estimated: 'Estimated', unavailable: 'Unavailable' }
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium mb-4 ${styles[source] || styles.unavailable}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${source === 'real' ? 'bg-emerald-400' : source === 'estimated' ? 'bg-amber-400' : 'bg-rose-400'}`} />
+      {label}: {labels[source] || 'Unavailable'}
+    </div>
+  )
+}
+
 export default function TripDashboard({ itinerary, input, onAskAero, onBack }: TripDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
 
   const nights = Math.ceil((new Date(input.returnDate).getTime() - new Date(input.departureDate).getTime()) / (1000 * 60 * 60 * 24))
   const heroImage = getCityImageLarge(input.destinationCity)
+  const ds = itinerary.dataSources || {}
 
   return (
     <div className="min-h-screen pt-20 pb-12">
@@ -101,17 +118,35 @@ export default function TripDashboard({ itinerary, input, onAskAero, onBack }: T
         <div className="animate-fade-in" key={activeTab}>
           {activeTab === 'overview' && <OverviewTab itinerary={itinerary} input={input} onAskAero={onAskAero} />}
           {activeTab === 'flights' && (
-            <FlightsSection
-              flights={itinerary.flights}
-              returnFlights={itinerary.returnFlights}
-              airport={itinerary.airport}
-              destinationAirport={itinerary.destinationAirport}
-            />
+            <>
+              <DataSourceBadge source={ds.flights} label="Flight data" />
+              <FlightsSection flights={itinerary.flights} returnFlights={itinerary.returnFlights} airport={itinerary.airport} destinationAirport={itinerary.destinationAirport} />
+            </>
           )}
-          {activeTab === 'hotels' && <HotelsSection hotels={itinerary.hotels} />}
-          {activeTab === 'restaurants' && <RestaurantsSection restaurants={itinerary.restaurants} />}
-          {activeTab === 'attractions' && <AttractionsSection attractions={itinerary.attractions} />}
-          {activeTab === 'itinerary' && <ItinerarySection dayPlans={itinerary.dayPlans} />}
+          {activeTab === 'hotels' && (
+            <>
+              <DataSourceBadge source={ds.hotels} label="Hotel data" />
+              <HotelsSection hotels={itinerary.hotels} />
+            </>
+          )}
+          {activeTab === 'restaurants' && (
+            <>
+              <DataSourceBadge source={ds.restaurants} label="Restaurant data" />
+              <RestaurantsSection restaurants={itinerary.restaurants} />
+            </>
+          )}
+          {activeTab === 'attractions' && (
+            <>
+              <DataSourceBadge source={ds.attractions} label="Attraction data" />
+              <AttractionsSection attractions={itinerary.attractions} />
+            </>
+          )}
+          {activeTab === 'itinerary' && (
+            <>
+              <DataSourceBadge source={ds.dayPlans} label="Day plans" />
+              <ItinerarySection dayPlans={itinerary.dayPlans} />
+            </>
+          )}
           {activeTab === 'budget' && <SmartBudget budget={itinerary.budget} />}
         </div>
       </div>
@@ -120,76 +155,99 @@ export default function TripDashboard({ itinerary, input, onAskAero, onBack }: T
 }
 
 function OverviewTab({ itinerary, input, onAskAero }: { itinerary: Itinerary; input: TripInput; onAskAero: () => void }) {
+  const f = itinerary.flights[0]
+  const h = itinerary.hotels[0]
+
   return (
     <div className="space-y-6">
       <TripScore score={itinerary.score} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass-card overflow-hidden">
-          <div className="h-28 relative overflow-hidden">
-            <img src="https://images.pexels.com/photos/1493756/pexels-photo-1493756.jpeg?auto=compress&cs=tinysrgb&h=200&w=600" alt="Flight" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-800 to-transparent" />
-            <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <Plane className="w-5 h-5 text-red-400" />
-              <h3 className="font-display font-semibold text-cream-100">Flight Summary</h3>
+        {f ? (
+          <div className="glass-card overflow-hidden">
+            <div className="h-28 relative overflow-hidden">
+              <img src="https://images.pexels.com/photos/1493756/pexels-photo-1493756.jpeg?auto=compress&cs=tinysrgb&h=200&w=600" alt="Flight" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-800 to-transparent" />
+              <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-red-400" />
+                <h3 className="font-display font-semibold text-cream-100">Flight Summary</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Outbound</span>
+                <span className="text-cream-100 font-medium">{f.airline} {f.airlineCode}{f.flightNumber}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Route</span>
+                <span className="text-cream-100 font-medium">{f.departureCode} → {f.arrivalCode}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Duration</span>
+                <span className="text-cream-100 font-medium">{f.duration}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Stops</span>
+                <span className="text-cream-100 font-medium">{f.stops === 0 ? 'Nonstop' : `1 stop in ${f.layoverCity}`}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Price</span>
+                <span className="text-red-400 font-semibold">${f.price.toLocaleString()}</span>
+              </div>
             </div>
           </div>
-          <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Outbound</span>
-              <span className="text-cream-100 font-medium">{itinerary.flights[0].airline} {itinerary.flights[0].airlineCode}{itinerary.flights[0].flightNumber}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Route</span>
-              <span className="text-cream-100 font-medium">{itinerary.flights[0].departureCode} → {itinerary.flights[0].arrivalCode}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Duration</span>
-              <span className="text-cream-100 font-medium">{itinerary.flights[0].duration}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Stops</span>
-              <span className="text-cream-100 font-medium">{itinerary.flights[0].stops === 0 ? 'Nonstop' : `1 stop in ${itinerary.flights[0].layoverCity}`}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Price</span>
-              <span className="text-red-400 font-semibold">${itinerary.flights[0].price.toLocaleString()}</span>
+        ) : (
+          <div className="glass-card p-5 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-cream-200 font-medium text-sm">No flight data available</p>
+              <p className="text-xs text-cream-400">No flights found via Amadeus for this route.</p>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="glass-card overflow-hidden">
-          <div className="h-28 relative overflow-hidden">
-            <img src={itinerary.hotels[0].image} alt={itinerary.hotels[0].name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-800 to-transparent" />
-            <div className="absolute bottom-3 left-4 flex items-center gap-2">
-              <Hotel className="w-5 h-5 text-red-400" />
-              <h3 className="font-display font-semibold text-cream-100">Top Hotel Pick</h3>
+        {h ? (
+          <div className="glass-card overflow-hidden">
+            <div className="h-28 relative overflow-hidden">
+              {h.image ? <img src={h.image} alt={h.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-navy-500 to-navy-700" />}
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-800 to-transparent" />
+              <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                <Hotel className="w-5 h-5 text-red-400" />
+                <h3 className="font-display font-semibold text-cream-100">Top Hotel Pick</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Hotel</span>
+                <span className="text-cream-100 font-medium">{h.name}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Rating</span>
+                <span className="flex items-center gap-1 text-cream-100 font-medium"><Star className="w-3.5 h-3.5 text-red-400 fill-red-400" /> {h.rating}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Neighborhood</span>
+                <span className="text-cream-100 font-medium">{h.neighborhood}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Per night</span>
+                <span className="text-cream-100 font-medium">${h.pricePerNight}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-cream-400">Total stay</span>
+                <span className="text-red-300 font-semibold">${h.totalPrice.toLocaleString()}</span>
+              </div>
             </div>
           </div>
-          <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Hotel</span>
-              <span className="text-cream-100 font-medium">{itinerary.hotels[0].name}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Rating</span>
-              <span className="flex items-center gap-1 text-cream-100 font-medium"><Star className="w-3.5 h-3.5 text-red-400 fill-red-400" /> {itinerary.hotels[0].rating}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Neighborhood</span>
-              <span className="text-cream-100 font-medium">{itinerary.hotels[0].neighborhood}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Per night</span>
-              <span className="text-cream-100 font-medium">${itinerary.hotels[0].pricePerNight}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-cream-400">Total stay</span>
-              <span className="text-red-300 font-semibold">${itinerary.hotels[0].totalPrice.toLocaleString()}</span>
+        ) : (
+          <div className="glass-card p-5 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-cream-200 font-medium text-sm">No hotel data available</p>
+              <p className="text-xs text-cream-400">No hotels found via Amadeus for these dates.</p>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -198,35 +256,44 @@ function OverviewTab({ itinerary, input, onAskAero }: { itinerary: Itinerary; in
             <Camera className="w-5 h-5 text-red-400" />
             <h3 className="font-display font-semibold text-cream-100">Top Attractions</h3>
           </div>
-          <div className="space-y-2">
-            {itinerary.attractions.slice(0, 4).map((a, i) => (
-              <div key={i} className="flex items-center justify-between text-sm bg-cream-100/5 rounded-lg px-3 py-2">
-                <div>
-                  <span className="text-cream-100 font-medium">{a.name}</span>
-                  <span className="text-xs text-cream-400 ml-2">{a.category} · {a.duration}</span>
+          {itinerary.attractions.length > 0 ? (
+            <div className="space-y-2">
+              {itinerary.attractions.slice(0, 4).map((a, i) => (
+                <div key={i} className="flex items-center justify-between text-sm bg-cream-100/5 rounded-lg px-3 py-2">
+                  <div>
+                    <span className="text-cream-100 font-medium">{a.name}</span>
+                    <span className="text-xs text-cream-400 ml-2">{a.category}{a.duration ? ` · ${a.duration}` : ''}</span>
+                  </div>
+                  {a.price != null ? <span className="text-red-400 font-semibold">${a.price}</span> : <span className="text-xs text-cream-500">N/A</span>}
                 </div>
-                <span className="text-red-400 font-semibold">${a.price}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-cream-400">No attraction data available for this destination.</p>
+          )}
         </div>
 
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Bus className="w-5 h-5 text-red-400" />
             <h3 className="font-display font-semibold text-cream-100">Transportation</h3>
+            <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">Estimated</span>
           </div>
-          <div className="space-y-2">
-            {itinerary.transport.map((t, i) => (
-              <div key={i} className="flex items-center justify-between text-sm bg-cream-100/5 rounded-lg px-3 py-2">
-                <div>
-                  <span className="text-cream-100 font-medium">{t.type}</span>
-                  <p className="text-xs text-cream-400">{t.description}</p>
+          {itinerary.transport.length > 0 ? (
+            <div className="space-y-2">
+              {itinerary.transport.map((t, i) => (
+                <div key={i} className="flex items-center justify-between text-sm bg-cream-100/5 rounded-lg px-3 py-2">
+                  <div>
+                    <span className="text-cream-100 font-medium">{t.type}</span>
+                    <p className="text-xs text-cream-400">{t.description}</p>
+                  </div>
+                  <span className="text-red-400 font-semibold">${t.price}</span>
                 </div>
-                <span className="text-red-400 font-semibold">${t.price}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-cream-400">No transport data available.</p>
+          )}
         </div>
       </div>
 

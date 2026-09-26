@@ -1,4 +1,4 @@
-import { Star, Utensils, MapPin } from 'lucide-react'
+import { Star, Utensils, MapPin, AlertCircle } from 'lucide-react'
 import type { Restaurant } from '../types'
 
 interface RestaurantsSectionProps {
@@ -6,20 +6,36 @@ interface RestaurantsSectionProps {
 }
 
 export default function RestaurantsSection({ restaurants }: RestaurantsSectionProps) {
+  if (!restaurants.length) {
+    return (
+      <div className="glass-card p-8 text-center">
+        <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+        <p className="text-cream-300 font-medium mb-1">No restaurant data available</p>
+        <p className="text-sm text-cream-400">No restaurants were found for this destination via the Amadeus Points of Interest API.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {restaurants.map((r, i) => (
         <div key={i} className="glass-card overflow-hidden hover:border-red-500/30 transition-all duration-300">
           <div className="h-32 relative overflow-hidden">
-            <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
+            {r.image ? (
+              <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-navy-500 to-navy-700" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-navy-800 via-navy-800/40 to-transparent" />
             <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-navy-900/70 backdrop-blur-sm">
-              <span className="text-xs font-medium text-red-300">{r.mealType}</span>
+              <span className="text-xs font-medium text-red-300">{r.mealType || 'Restaurant'}</span>
             </div>
-            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-navy-900/70 backdrop-blur-sm">
-              <Star className="w-3 h-3 text-red-400 fill-red-400" />
-              <span className="text-xs font-semibold text-cream-100">{r.rating}</span>
-            </div>
+            {r.rating > 0 && (
+              <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-navy-900/70 backdrop-blur-sm">
+                <Star className="w-3 h-3 text-red-400 fill-red-400" />
+                <span className="text-xs font-semibold text-cream-100">{r.rating}</span>
+              </div>
+            )}
           </div>
 
           <div className="p-4">
@@ -33,13 +49,13 @@ export default function RestaurantsSection({ restaurants }: RestaurantsSectionPr
               </div>
             </div>
 
-            <p className="text-xs text-cream-400 leading-relaxed mb-3">{r.description}</p>
+            {r.description && <p className="text-xs text-cream-400 leading-relaxed mb-3">{r.description}</p>}
 
             <div className="flex items-center justify-between pt-3 border-t border-cream-100/5">
               <span className="text-xs text-cream-400 flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-red-400" /> {r.neighborhood}
+                <MapPin className="w-3 h-3 text-red-400" /> {r.neighborhood || 'N/A'}
               </span>
-              <span className="text-sm font-semibold text-red-400">{r.priceRange}</span>
+              <span className="text-sm font-semibold text-red-400">{r.priceRange || 'N/A'}</span>
             </div>
           </div>
         </div>

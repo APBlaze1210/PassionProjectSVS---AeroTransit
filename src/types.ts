@@ -15,13 +15,13 @@ export interface FlightSegment {
   aircraft: string
   departureAirport: string
   departureCode: string
-  departureTerminal: string
-  departureGate: string
+  departureTerminal?: string
+  departureGate?: string
   departureTime: string
   arrivalAirport: string
   arrivalCode: string
-  arrivalTerminal: string
-  arrivalGate: string
+  arrivalTerminal?: string
+  arrivalGate?: string
   arrivalTime: string
   duration: string
   price: number
@@ -33,10 +33,10 @@ export interface FlightSegment {
 export interface AirportInfo {
   name: string
   code: string
-  terminals: TerminalInfo[]
-  securityWaitTime: string
-  lounges: LoungeInfo[]
-  services: string[]
+  terminals?: TerminalInfo[]
+  securityWaitTime?: string
+  lounges?: LoungeInfo[]
+  services?: string[]
 }
 
 export interface TerminalInfo {
@@ -60,29 +60,29 @@ export interface Hotel {
   totalPrice: number
   neighborhood: string
   amenities: string[]
-  image: string
-  description: string
+  image?: string
+  description?: string
 }
 
 export interface Restaurant {
   name: string
   cuisine: string
-  priceRange: string
+  priceRange?: string
   rating: number
-  neighborhood: string
-  mealType: string
-  description: string
-  image: string
+  neighborhood?: string
+  mealType?: string
+  description?: string
+  image?: string
 }
 
 export interface Attraction {
   name: string
   category: string
   rating: number
-  price: number
-  duration: string
-  description: string
-  image: string
+  price?: number
+  duration?: string
+  description?: string
+  image?: string
 }
 
 export interface DayPlan {
@@ -120,6 +120,8 @@ export interface TripScore {
   summary: string
 }
 
+export type DataSource = 'real' | 'unavailable' | 'estimated'
+
 export interface Itinerary {
   flights: FlightSegment[]
   returnFlights: FlightSegment[]
@@ -133,6 +135,7 @@ export interface Itinerary {
   dayPlans: DayPlan[]
   budget: BudgetBreakdown
   score: TripScore
+  dataSources?: Record<string, DataSource>
 }
 
 export interface SavedTrip {

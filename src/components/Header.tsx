@@ -1,12 +1,15 @@
-import { Plane, Sparkles, LayoutDashboard } from 'lucide-react'
+import { Plane, Sparkles, LayoutDashboard, LogIn, LogOut, Award, User as UserIcon } from 'lucide-react'
+import { useAuth } from '../lib/auth'
 
 interface HeaderProps {
   onLogoClick: () => void
   onDashboardClick: () => void
   hasTrip: boolean
+  onLoginClick: () => void
 }
 
-export default function Header({ onLogoClick, onDashboardClick, hasTrip }: HeaderProps) {
+export default function Header({ onLogoClick, onDashboardClick, hasTrip, onLoginClick }: HeaderProps) {
+  const { user, logout } = useAuth()
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-cream-100/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,6 +38,27 @@ export default function Header({ onLogoClick, onDashboardClick, hasTrip }: Heade
               <Sparkles className="w-3.5 h-3.5 text-red-400" />
               <span className="text-xs font-medium text-red-300">Aero AI Online</span>
             </div>
+
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-xs font-semibold text-amber-300">{user.points} pts</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cream-100/5 border border-cream-100/10">
+                  <UserIcon className="w-3.5 h-3.5 text-cream-300" />
+                  <span className="text-xs font-medium text-cream-200">{user.username}</span>
+                </div>
+                <button onClick={logout} className="btn-ghost text-sm" title="Logout">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button onClick={onLoginClick} className="btn-primary text-sm">
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Login</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

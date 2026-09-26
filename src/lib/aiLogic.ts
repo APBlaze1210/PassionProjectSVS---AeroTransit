@@ -17,14 +17,16 @@ export function getAIResponse(question: string, itinerary: Itinerary | null, inp
 
   if (q.match(/gate|terminal|airport|security|lounge/)) {
     const f = itinerary.flights[0]
+    if (!f) return { text: 'No flight data available for this trip.', suggestions: ['Build My Trip'] }
     return {
-      text: `Your flight ${f.airlineCode}${f.flightNumber} departs from ${input.departureCity} (${f.departureCode}), Terminal ${f.departureTerminal}, Gate ${f.departureGate}. Security wait is currently ${itinerary.airport.securityWaitTime}. Available lounges: ${itinerary.airport.lounges.map((l: { name: string }) => l.name).join(', ')}.`,
+      text: `Your flight ${f.airlineCode}${f.flightNumber} departs from ${input.departureCity} (${f.departureCode}), Terminal ${f.departureTerminal || 'N/A'}, Gate ${f.departureGate || 'N/A'}. Security wait is currently ${itinerary.airport.securityWaitTime || 'unavailable'}. Available lounges: ${(itinerary.airport.lounges || []).map((l: { name: string }) => l.name).join(', ') || 'data unavailable'}.`,
       suggestions: ['Where do I check in?', 'What amenities are at the airport?'],
     }
   }
 
   if (q.match(/flight|airline|boarding|depart/)) {
     const f = itinerary.flights[0]
+    if (!f) return { text: 'No flight data available for this trip.', suggestions: ['Build My Trip'] }
     return {
       text: `Your outbound flight is ${f.airline} ${f.airlineCode}${f.flightNumber} on a ${f.aircraft}. It departs at ${f.departureTime} and arrives at ${f.arrivalTime}. Duration: ${f.duration}. ${f.stops === 0 ? 'Nonstop flight.' : `1 stop in ${f.layoverCity} for ${f.layoverDuration}.`} Price: $${f.price}.`,
       suggestions: ['Show return flight details', 'Any cheaper flight options?'],
@@ -33,6 +35,7 @@ export function getAIResponse(question: string, itinerary: Itinerary | null, inp
 
   if (q.match(/hotel|stay|accommodation|room/)) {
     const h = itinerary.hotels[0]
+    if (!h) return { text: 'No hotel data available for this trip.', suggestions: ['Build My Trip'] }
     return {
       text: `I recommend ${h.name} in ${h.neighborhood} — rated ${h.rating} stars at $${h.pricePerNight}/night. Amenities include ${h.amenities.join(', ')}. ${h.description}`,
       suggestions: ['Show all hotel options', 'Which hotel is cheapest?'],
@@ -73,6 +76,7 @@ export function getAIResponse(question: string, itinerary: Itinerary | null, inp
 
   if (q.match(/layover|connection|connecting|wait between/)) {
     const f = itinerary.flights[0]
+    if (!f) return { text: 'No flight data available for this trip.', suggestions: ['Build My Trip'] }
     if (f.stops > 0 && f.layoverCity) {
       return {
         text: `You have a layover in ${f.layoverCity} for ${f.layoverDuration}. That's enough time to grab a meal or visit an airport lounge. I can recommend things to do near the airport if you'd like.`,

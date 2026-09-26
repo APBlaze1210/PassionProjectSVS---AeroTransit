@@ -3,6 +3,9 @@
   "healthPath": "/",
   "startCommand": "docker compose -f docker-compose.base44.yml up -d",
   "secrets": [
+    {"name": "AMADEUS_CLIENT_ID", "description": "Amadeus for Developers API client ID (developers.amadeus.com > My Apps).", "requiredAtBoot": false},
+    {"name": "AMADEUS_CLIENT_SECRET", "description": "Amadeus for Developers API client secret (developers.amadeus.com > My Apps).", "requiredAtBoot": false},
+    {"name": "JWT_SECRET", "description": "Secret used to sign JWT auth tokens. Auto-generated for development; replace with your own for production.", "requiredAtBoot": true, "generatedForDevelopment": true},
     {"name": "VITE_SUPABASE_URL", "description": "Optional. Supabase project URL (Project Settings > API). Enables saving trips to the `trips` table.", "requiredAtBoot": false},
     {"name": "VITE_SUPABASE_ANON_KEY", "description": "Optional. Supabase anon public key (Project Settings > API).", "requiredAtBoot": false}
   ]
