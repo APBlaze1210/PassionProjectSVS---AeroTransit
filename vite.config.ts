@@ -9,5 +9,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    // Accept any Host header so proxied previews (e.g. Base44 sandbox) work.
+    allowedHosts: true,
   },
 })

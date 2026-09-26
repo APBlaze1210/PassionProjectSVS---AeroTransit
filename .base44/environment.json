@@ -1,0 +1,9 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {"name": "VITE_SUPABASE_URL", "description": "Optional. Supabase project URL (Project Settings > API). Enables saving trips to the `trips` table.", "requiredAtBoot": false},
+    {"name": "VITE_SUPABASE_ANON_KEY", "description": "Optional. Supabase anon public key (Project Settings > API).", "requiredAtBoot": false}
+  ]
+}
